@@ -12,12 +12,17 @@ if ! mountpoint -q "$AUTO_MOUNTS"; then
     mount -t tmpfs tmpfs "$AUTO_MOUNTS" -o mode=0755
 fi
 
+raw_mount() {
+    mkdir -p -m 0000 "$2"
+    mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$2"
+}
+
 direct_mount() {
-    echo "direct: $1"
+    
 }
 
 overlay_mount() {
-    echo "overlay: $1"
+    
 }
 
 for part in "$DEVICE"*; do
@@ -26,7 +31,6 @@ for part in "$DEVICE"*; do
     fs=$(blkid "$part" -s TYPE -o value)
 
     if [ -n "$fs" ]; then
-        echo "Раздел $part: $fs"
         case "$fs" in
             ext*|xfs|btrfs|jfs|zfs) 
                 overlay_mount "$part"
