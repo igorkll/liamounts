@@ -9,14 +9,18 @@ process_paths() {
     local automounts_path="$2"
     local realmounts_path="$1"
     
-    echo "automounts path: $automounts_path"
-    echo "realmounts path: $realmounts_path"
 
-    umount "$automounts_path"
-    rmdir "$automounts_path"
+    if [ -d "$automounts_path" ]; then
+        echo "umount automounts path: $automounts_path"
+        umount "$automounts_path"
+        rmdir "$automounts_path"
+    fi
 
-    umount "$realmounts_path"
-    rmdir "$realmounts_path"
+    if [ -d "$realmounts_path" ]; then
+        echo "umount realmounts path: $realmounts_path"
+        umount "$realmounts_path"
+        rmdir "$realmounts_path"
+    fi
 }
 
 findmnt -l -o TARGET --source "$PART" -n | while read path; do
