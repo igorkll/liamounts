@@ -62,10 +62,10 @@ get_fs_name() {
     
     # Очищаем имя: только буквы, цифры, _, -, .
     # Все остальное заменяем на _
-    name=$(echo "$name" | sed 's/[^a-zA-Z0-9_.-]/_/g')
+    # name=$(echo "$name" | sed 's/[^a-zA-Z0-9_.-]/_/g')
     
     # Убираем лишние подчеркивания подряд
-    name=$(echo "$name" | sed 's/__*/_/g')
+    # name=$(echo "$name" | sed 's/__*/_/g')
     
     # Убираем . в начале (скрытые директории)
     name=$(echo "$name" | sed 's/^\./_/')
@@ -76,8 +76,23 @@ get_fs_name() {
     echo "$name"
 }
 
+get_unique_name() {
+    local base_name="$1"
+    local new_name="$base_name"
+    local counter=1
+    
+    while [ -d "/automounts/$new_name" ] || [ -d "/realmounts/$new_name" ]; do
+        new_name="${base_name}_${counter}"
+        counter=$((counter + 1))
+    done
+    
+    echo "$new_name"
+}
+
 direct_mount() {
     local name="$(get_fs_name "$1")"
+    name="$(get_unique_name "$name")"
+
     local path="${AUTO_MOUNTS}/$name"
 
     echo "direct mount: \"$name\" to \"$path\""
@@ -88,6 +103,8 @@ direct_mount() {
 
 overlay_mount() {
     local name="$(get_fs_name "$1")"
+    name="$(get_unique_name "$name")"
+
     local path="${REAL_MOUNTS}/$name"
     local bind="${AUTO_MOUNTS}/$name"
 
