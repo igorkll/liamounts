@@ -8,11 +8,11 @@ REAL_MOUNTS="/realmounts"
 AUTO_MOUNTS="/automounts"
 
 if ! mountpoint -q "$REAL_MOUNTS"; then
-    mount -t tmpfs tmpfs "$REAL_MOUNTS" -o mode=0700
+    mount -t tmpfs tmpfs "$REAL_MOUNTS" -o nosuid,nodev,mode=0700
 fi
 
 if ! mountpoint -q "$AUTO_MOUNTS"; then
-    mount -t tmpfs tmpfs "$AUTO_MOUNTS" -o mode=0755
+    mount -t tmpfs tmpfs "$AUTO_MOUNTS" -o nosuid,nodev,mode=0755
 fi
 
 get_fs_name() {
@@ -69,7 +69,7 @@ overlay_mount() {
     mount -o nosuid,nodev "$1" "$path"
 
     mkdir -p -m 0000 "$bind"
-    bindfs --force-user=root --force-group=root --perms=0777,a-s --chown-ignore --chgrp-ignore --chmod-ignore -o allow_other "$path" "$bind"
+    bindfs --force-user=root --force-group=root --perms=0777,a-s --chown-ignore --chgrp-ignore --chmod-ignore -o nosuid,nodev,allow_other "$path" "$bind"
 }
 
 fs=$(blkid "$PART" -s TYPE -o value)
