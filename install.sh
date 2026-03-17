@@ -1,33 +1,53 @@
 #!/bin/bash
 
-apt install at
-apt install bindfs
+if command -v apt &> /dev/null; then
+    apt install -y at
+    apt install -y bindfs
+fi
 
 grep -q '^user_allow_other' /etc/fuse.conf || echo 'user_allow_other' >> /etc/fuse.conf
 
-systemctl mask udisks2.service
-systemctl stop udisks2.service
+if command -v systemctl &> /dev/null; then
+    systemctl mask udisks2.service
+    systemctl stop udisks2.service
+fi
 
-umount_all() {
+nuke_directory() {
     local dir="$1"
     
-    for d in "$dir"/*/; do
-        [ -d "$d" ] || continue
-        
-        umount "$d"
-        rmdir "$d"
+    if [ ! -d "$dir" ]; then
+        return
+    fi
+    
+    echo "nuke directory: $dir"
+    
+    # 1. Принудительно размонтировать всё внутри
+    mount | grep "$dir" | awk '{print $3}' | sort -r | while read -r mp; do
+        echo "  umount internal: $mp"
+        umount -l "$mp" 2>/dev/null
     done
+    
+    # 2. Размонтировать саму директорию (если это точка монтирования)
+    if mountpoint -q "$dir"; then
+        echo "  umount base: $dir"
+        umount -l "$dir" 2>/dev/null
+    fi
+    
+    # 3. Удалить всё рекурсивно (принудительно)
+    echo "  delete internal: $dir"
+    rm -rf "${dir:?}"/* 2>/dev/null
+    
+    # 4. Удалить саму директорию
+    echo "  delete base: $dir"
+    rm -rf "$dir" 2>/dev/null
 }
 
-umount_all /realmounts
-umount /realmounts
-rmdir /realmounts
+nuke_directory "/realmounts"
+nuke_directory "/automounts"
+
 mkdir -p /realmounts
 chmod 0700 /realmounts
 
-umount_all /automounts
-umount /automounts
-rmdir /automounts
 mkdir -p /automounts
 chmod 0755 /automounts
 
