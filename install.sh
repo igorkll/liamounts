@@ -79,7 +79,7 @@ for dev in /dev/sd* /dev/nvme*; do
     [ -b "$dev" ] || continue
     
     if udevadm info --query=property "$dev" | grep -q "ID_FS_USAGE=filesystem"; then
-        echo "Try mount device: $dev"
+        echo "try mount device: $dev"
         /usr/bin/liamounts_mount_wrapper.sh "$dev"
     fi
 done
