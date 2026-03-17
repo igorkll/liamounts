@@ -75,11 +75,33 @@ done
 
 # ---------------- update disks
 
-for dev in /dev/sd* /dev/nvme*; do
-    [ -b "$dev" ] || continue
+try_mount() {
+    local dev="$1"
+    [ -b "$dev" ] || return
     
-    if udevadm info --query=property "$dev" | grep -q "ID_FS_USAGE=filesystem"; then
+    if udevadm info --query=property "$dev" 2>/dev/null | grep -q "ID_FS_USAGE=filesystem"; then
         echo "try mount device: $dev"
         /usr/bin/liamounts_mount_wrapper.sh "$dev"
     fi
+}
+
+# SATA/SAS/NVMe
+for dev in /dev/sd* /dev/hd* /dev/nvme* /dev/vd*; do
+    try_mount "$dev"
 done
+
+# MMC/SD-карты
+for dev in /dev/mmcblk*; do
+    try_mount "$dev"
+done
+
+# CD/DVD-ROM
+for dev in /dev/sr*; do
+    try_mount "$dev"
+done
+
+# MD RAID
+for dev in /dev/md*; do
+    try_mount "$dev"
+done
+
