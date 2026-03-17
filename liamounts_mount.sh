@@ -45,21 +45,20 @@ get_fs_name() {
     echo "$name"
 }
 
-raw_mount() {
-    mkdir -p -m 0000 "$2"
-    mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$2"
-}
-
 direct_mount() {
     local name="$(get_fs_name "$1")"
-    
-    raw_mount "$1" "${AUTO_MOUNTS}/$name"
+    local path="${AUTO_MOUNTS}/$name"
+
+    mkdir -p -m 0000 "$path"
+    mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$path"
 }
 
 overlay_mount() {
     local name="$(get_fs_name "$1")"
+    local path="${AUTO_MOUNTS}/$name"
 
-    raw_mount "$1" "${AUTO_MOUNTS}/$name"
+    mkdir -p -m 0000 "$path"
+    mount -o nosuid,nodev "$1" "$path"
 }
 
 for part in "$DEVICE"*; do
