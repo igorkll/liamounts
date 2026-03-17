@@ -1,16 +1,24 @@
 #!/bin/bash
 
+# ---------------- install packages
+
 if command -v apt &> /dev/null; then
     apt install -y at
     apt install -y bindfs
 fi
 
+# ---------------- enable user_allow_other
+
 grep -q '^user_allow_other' /etc/fuse.conf || echo 'user_allow_other' >> /etc/fuse.conf
+
+# ---------------- disable udisks2
 
 if command -v systemctl &> /dev/null; then
     systemctl mask udisks2.service
     systemctl stop udisks2.service
 fi
+
+# ---------------- remove directories
 
 nuke_directory() {
     local dir="$1"
@@ -45,11 +53,15 @@ nuke_directory() {
 nuke_directory "/realmounts"
 nuke_directory "/automounts"
 
+# ---------------- create directories
+
 mkdir -p /realmounts
 chmod 0700 /realmounts
 
 mkdir -p /automounts
 chmod 0755 /automounts
+
+# ---------------- copy files
 
 cp 99-liamounts.rules /etc/udev/rules.d/99-liamounts.rules
 chmod 644 /etc/udev/rules.d/99-liamounts.rules
@@ -59,4 +71,15 @@ for script in liamounts_mount_wrapper.sh liamounts_mount.sh liamounts_umount_wra
     cp "$script" "/usr/bin/$script"
     chmod 755 "/usr/bin/$script"
     chown root:root "/usr/bin/$script"
+done
+
+# ---------------- update disks
+
+for dev in /dev/sd* /dev/nvme*; do
+    [ -b "$dev" ] || continue
+    
+    if udevadm info --query=property "$dev" | grep -q "ID_FS_USAGE=filesystem"; then
+        echo "Try mount device: $dev"
+        /usr/bin/liamounts_mount_wrapper.sh "$dev"
+    fi
 done
