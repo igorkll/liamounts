@@ -5,6 +5,33 @@ exec >> /var/log/liamounts.log 2>&1
 PART="$1"
 echo "liamounts mount: $PART"
 
+ROOT_PART=$(findmnt -n -o SOURCE --target /)
+
+get_disk_from_part() {
+    local DEV="$1"
+    if echo "$DEV" | grep -Eq '^/dev/(nvme|mmcblk)'; then
+		PART_NUM="${DEV##*p}"
+		DISK="${DEV%p$PART_NUM}"
+	else
+		PART_NUM="${DEV##*[!0-9]}"
+		DISK="${DEV%$PART_NUM}"
+	fi
+
+    echo "$DISK"
+}
+
+DISK="$(get_disk_from_part "$PART")"
+ROOT_DISK="$(get_disk_from_part "$ROOT_PART")"
+
+echo "root part: $ROOT_PART"
+echo "root disk: $ROOT_DISK"
+echo "mount disk: $DISK"
+
+if [ "$DISK" = "$ROOT_DISK" ]; then
+    echo "skip mount root disk"
+    exit 0
+fi
+
 REAL_MOUNTS="/realmounts"
 AUTO_MOUNTS="/automounts"
 
