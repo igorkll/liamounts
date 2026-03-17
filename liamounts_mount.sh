@@ -12,17 +12,54 @@ if ! mountpoint -q "$AUTO_MOUNTS"; then
     mount -t tmpfs tmpfs "$AUTO_MOUNTS" -o mode=0755
 fi
 
+get_fs_name() {
+    local device="$1"
+    local name
+    
+    # Пытаемся получить LABEL
+    name=$(blkid -s LABEL -o value "$device" 2>/dev/null)
+    
+    # Если нет LABEL, пробуем UUID
+    if [ -z "$name" ]; then
+        name=$(blkid -s UUID -o value "$device" 2>/dev/null)
+    fi
+    
+    # Если и UUID нет, используем имя устройства (sdb1)
+    if [ -z "$name" ]; then
+        name=$(basename "$device")
+    fi
+    
+    # Очищаем имя: только буквы, цифры, _, -, .
+    # Все остальное заменяем на _
+    name=$(echo "$name" | sed 's/[^a-zA-Z0-9_.-]/_/g')
+    
+    # Убираем лишние подчеркивания подряд
+    name=$(echo "$name" | sed 's/__*/_/g')
+    
+    # Убираем . в начале (скрытые директории)
+    name=$(echo "$name" | sed 's/^\./_/')
+    
+    # Ограничиваем длину (макс 255 для ФС, берем 128 для запаса)
+    name=$(echo "$name" | cut -c1-128)
+    
+    echo "$name"
+}
+
 raw_mount() {
     mkdir -p -m 0000 "$2"
     mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$2"
 }
 
 direct_mount() {
+    local name="$(get_fs_name "$1")"
     
+    raw_mount "$1" "${AUTO_MOUNTS}/$name"
 }
 
 overlay_mount() {
-    
+    local name="$(get_fs_name "$1")"
+
+    raw_mount "$1" "${AUTO_MOUNTS}/$name"
 }
 
 for part in "$DEVICE"*; do
