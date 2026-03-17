@@ -1,4 +1,5 @@
 #!/bin/bash
+
 exec >> /var/log/liamounts.log 2>&1
 
 PART="$1"
@@ -85,3 +86,5 @@ if [ -n "$fs" ]; then
         ;;
     esac
 fi
+
+echo "complete!"
