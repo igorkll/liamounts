@@ -68,6 +68,8 @@ overlay_mount() {
     mount -o nosuid,nodev "$1" "$path"
 }
 
+sleep 2
+
 fs=$(blkid "$PART" -s TYPE -o value)
 echo "fs type: $fs"
 if [ -n "$fs" ]; then

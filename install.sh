@@ -1,5 +1,8 @@
 #!/bin/bash
 
+systemctl stop udisks2.service
+systemctl disable udisks2.service
+
 umount_all() {
     local dir="$1"
     
