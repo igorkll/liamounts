@@ -69,7 +69,7 @@ overlay_mount() {
     mount -o nosuid,nodev "$1" "$path"
 
     mkdir -p -m 0000 "$bind"
-    bindfs --force-user=root --force-group=root --perms=0777,a-s --chmod-ignore --chgrp-ignore --chmod-ignore -o allow_other "$path" "$bind"
+    bindfs --force-user=root --force-group=root --perms=0777,a-s --chown-ignore --chgrp-ignore --chmod-ignore -o allow_other "$path" "$bind"
 }
 
 fs=$(blkid "$PART" -s TYPE -o value)
