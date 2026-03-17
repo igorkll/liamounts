@@ -8,11 +8,11 @@ REAL_MOUNTS="/realmounts"
 AUTO_MOUNTS="/automounts"
 
 if ! mountpoint -q "$REAL_MOUNTS"; then
-    systemd-mount --tmpfs "$REAL_MOUNTS" -o mode=0700 --collect
+    mount -t tmpfs tmpfs "$REAL_MOUNTS" -o mode=0700
 fi
 
 if ! mountpoint -q "$AUTO_MOUNTS"; then
-    systemd-mount --tmpfs "$AUTO_MOUNTS" -o mode=0755 --collect
+    mount -t tmpfs tmpfs "$AUTO_MOUNTS" -o mode=0755
 fi
 
 get_fs_name() {
@@ -55,7 +55,7 @@ direct_mount() {
     echo "direct mount: \"$name\" to \"$path\""
     
     mkdir -p -m 0000 "$path"
-    systemd-mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$path" --collect
+    mount -o nosuid,nodev,uid=0,gid=0,umask=000 "$1" "$path"
 }
 
 overlay_mount() {
@@ -65,7 +65,7 @@ overlay_mount() {
     echo "overlay mount: \"$name\" to \"$path\""
 
     mkdir -p -m 0000 "$path"
-    systemd-mount -o nosuid,nodev "$1" "$path" --collect
+    mount -o nosuid,nodev "$1" "$path"
 }
 
 fs=$(blkid "$PART" -s TYPE -o value)
