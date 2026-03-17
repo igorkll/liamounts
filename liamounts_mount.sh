@@ -60,15 +60,17 @@ direct_mount() {
 
 overlay_mount() {
     local name="$(get_fs_name "$1")"
-    local path="${AUTO_MOUNTS}/$name"
+    local path="${REAL_MOUNTS}/$name"
+    local bind="${AUTO_MOUNTS}/$name"
 
-    echo "overlay mount: \"$name\" to \"$path\""
+    echo "overlay mount: \"$name\" to \"$path\" bind \"$bind\""
 
     mkdir -p -m 0000 "$path"
     mount -o nosuid,nodev "$1" "$path"
-}
 
-sleep 2
+    mkdir -p -m 0000 "$bind"
+    bindfs --force-user=root --force-group=root --perms=0777 -o allow_other "$path" "$bind"
+}
 
 fs=$(blkid "$PART" -s TYPE -o value)
 echo "fs type: $fs"

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+apt install at
+apt install bindfs
+
+grep -q '^user_allow_other' /etc/fuse.conf || echo 'user_allow_other' >> /etc/fuse.conf
+
 systemctl stop udisks2.service
 systemctl disable udisks2.service
 

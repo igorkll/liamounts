@@ -4,3 +4,7 @@ the system of automatic mounting of removable media for linux
 ## dependencies
 * udev
 * at
+* bindfs
+
+## conflicts
+* udisks2
