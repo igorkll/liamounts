@@ -52,7 +52,11 @@ mkdir -p /automounts
 chmod 0755 /automounts
 
 cp 99-liamounts.rules /etc/udev/rules.d/99-liamounts.rules
-cp liamounts_mount_wrapper.sh /usr/bin/liamounts_mount_wrapper.sh
-cp liamounts_mount.sh /usr/bin/liamounts_mount.sh
-cp liamounts_umount_wrapper.sh /usr/bin/liamounts_umount_wrapper.sh
-cp liamounts_umount.sh /usr/bin/liamounts_umount.sh
+chmod 644 /etc/udev/rules.d/99-liamounts.rules
+chown root:root /etc/udev/rules.d/99-liamounts.rules
+
+for script in liamounts_mount_wrapper.sh liamounts_mount.sh liamounts_umount_wrapper.sh liamounts_umount.sh; do
+    cp "$script" "/usr/bin/$script"
+    chmod 755 "/usr/bin/$script"
+    chown root:root "/usr/bin/$script"
+done
