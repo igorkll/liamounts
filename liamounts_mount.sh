@@ -1,6 +1,9 @@
 #!/bin/bash
+exec >> /var/log/liamounts.log 2>&1
 
-DEVICE="$1"
+PART="$1"
+echo "liamounts mount: $PART"
+
 REAL_MOUNTS="/realmounts"
 AUTO_MOUNTS="/automounts"
 
@@ -61,20 +64,15 @@ overlay_mount() {
     mount -o nosuid,nodev "$1" "$path"
 }
 
-for part in "$DEVICE"*; do
-    [ "$part" = "$DEVICE*" ] && break
-    [ -b "$part" ] || continue
-    fs=$(blkid "$part" -s TYPE -o value)
+fs=$(blkid "$PART" -s TYPE -o value)
+if [ -n "$fs" ]; then
+    case "$fs" in
+        ext*|xfs|btrfs|jfs|zfs) 
+            overlay_mount "$PART"
+        ;;
 
-    if [ -n "$fs" ]; then
-        case "$fs" in
-            ext*|xfs|btrfs|jfs|zfs) 
-                overlay_mount "$part"
-            ;;
-
-            *)
-                direct_mount "$part"
-            ;;
-        esac
-    fi
-done
+        *)
+            direct_mount "$PART"
+        ;;
+    esac
+fi
