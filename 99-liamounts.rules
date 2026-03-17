@@ -1,1 +1,2 @@
 ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_USAGE}=="filesystem", RUN+="/usr/bin/liamounts_mount_wrapper.sh /dev/%k"
+ACTION=="remove", SUBSYSTEM=="block", ENV{ID_FS_USAGE}=="filesystem", RUN+="/usr/bin/liamounts_umount_wrapper.sh /dev/%k"

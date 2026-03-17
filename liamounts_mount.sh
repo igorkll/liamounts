@@ -87,4 +87,4 @@ if [ -n "$fs" ]; then
     esac
 fi
 
-echo "complete!"
+echo "mount completed!"

@@ -34,3 +34,5 @@ chmod 0755 /automounts
 cp 99-liamounts.rules /etc/udev/rules.d/99-liamounts.rules
 cp liamounts_mount_wrapper.sh /usr/bin/liamounts_mount_wrapper.sh
 cp liamounts_mount.sh /usr/bin/liamounts_mount.sh
+cp liamounts_umount_wrapper.sh /usr/bin/liamounts_umount_wrapper.sh
+cp liamounts_umount.sh /usr/bin/liamounts_umount.sh
