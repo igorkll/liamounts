@@ -26,7 +26,7 @@ cd ..
 # ---------------- install liamountsctl
 
 cp liamountsctl/liamountsctl /usr/bin/liamountsctl
-chmod 4755 /usr/bin/liamountsctl
+chmod 4755 /usr/bin/liamountsctl # liamountsctl is SUID
 chown root:root /usr/bin/liamountsctl
 
 # ---------------- disable udisks2
