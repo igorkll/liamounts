@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+    echo "Restart with root..."
+    exec sudo "$0" "$@"
+    exit $?
+fi
+
 # ---------------- install packages
 
 if command -v apt &> /dev/null; then
@@ -10,6 +16,18 @@ fi
 # ---------------- enable user_allow_other
 
 grep -q '^user_allow_other' /etc/fuse.conf || echo 'user_allow_other' >> /etc/fuse.conf
+
+# ---------------- build liamountsctl
+
+cd liamountsctl
+./build.sh
+cd ..
+
+# ---------------- install liamountsctl
+
+cp liamountsctl/liamountsctl /usr/bin/liamountsctl
+chmod 4755 /usr/bin/liamountsctl
+chown root:root /usr/bin/liamountsctl
 
 # ---------------- disable udisks2
 
