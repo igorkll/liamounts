@@ -34,9 +34,9 @@ static void iterateMounts(void(*callback)(const char* name, const char* file, co
                 memcpy(real_mount_directory, str, strlen(str));
 
                 if (fs_exists(real_mount_directory)) {
-                    callback("", "", entry->mnt_dir, real_mount_directory);
+                    callback("", entry->mnt_fsname, entry->mnt_dir, real_mount_directory);
                 } else {
-                    callback("", "", entry->mnt_dir, entry->mnt_dir);
+                    callback("", entry->mnt_fsname, entry->mnt_dir, entry->mnt_dir);
                 }
 
                 free(real_mount_directory);
