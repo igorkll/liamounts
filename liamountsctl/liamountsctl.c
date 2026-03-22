@@ -36,11 +36,11 @@ static void iterateMounts(void(*callback)(const char* name, const char* file, co
                 if (fs_exists(real_mount_directory)) {
                     callback("", "", entry->mnt_dir, real_mount_directory);
                 } else {
-                    callback("", "", entry->mnt_dir, real_mount_directory);
+                    callback("", "", entry->mnt_dir, entry->mnt_dir);
                 }
-            }
 
-            free(real_mount_directory);
+                free(real_mount_directory);
+            }
         }
     }
     
@@ -52,6 +52,11 @@ int main(int argc, char* argv[]) {
         printf("liamountsctl list - displays a list of mounted devices\n");
         printf("liamountsctl umount name - \n");
         return 0;
+    }
+
+    if (setuid(0) != 0) {
+        perror("setuid");
+        return 1;
     }
 
     if (strcmp(argv[1], "list") == 0) {
