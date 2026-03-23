@@ -107,20 +107,22 @@ static void iterate_mounts(void(*callback)(const char* name, const char* file, c
         if (strncmp(entry->mnt_dir, target_dir, strlen(target_dir)) == 0) {
             char* real_mount_directory = strdup(entry->mnt_dir);
             if (real_mount_directory) {
-                const char* name = fs_filename(entry->mnt_dir);
+                char* mnt_dir = strdup(entry->mnt_dir);
+                char* name = strdup(fs_filename(entry->mnt_dir));
 
                 const char* str = "/realmounts/";
                 memcpy(real_mount_directory, str, strlen(str));
 
                 const char* dev_path = get_fs_dev_file(entry->mnt_fsname);
-                printf("%s %s\n", entry->mnt_dir, name);
                 if (fs_exists(real_mount_directory)) {
-                    callback(name, dev_path, entry->mnt_dir, real_mount_directory);
+                    callback(name, dev_path, mnt_dir, real_mount_directory);
                 } else {
-                    callback(name, dev_path, entry->mnt_dir, entry->mnt_dir);
+                    callback(name, dev_path, mnt_dir, mnt_dir);
                 }
 
                 free(real_mount_directory);
+                free(name);
+                free(mnt_dir);
             }
         }
     }
