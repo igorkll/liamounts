@@ -65,6 +65,19 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
     }
 }
 
+static bool is_valid_name(const char *name) {
+    if (!name || *name == '\0') return false;
+    
+    if (strstr(name, "\\") != 0 ||
+        strstr(name, "/") != 0 ||
+        strstr(name, "\n") != 0 ||
+        strstr(name, "..") != 0) {
+        return false;
+    }
+    
+    return true;
+}
+
 static void show_mount(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory) {
     printf("%s %s %s %s\n", name, file, access_mount_directory, real_mount_directory);
 }
@@ -103,14 +116,23 @@ static void iterate_mounts(void(*callback)(const char* name, const char* file, c
 }
 
 static void umount_device(const char* umount_name) {
+    if (!is_valid_name(umount_name)) {
+        printf("failed to umount (invalid name)\n");
+        return;
+    }
+
     char path[PATH_MAX];
     int ret;
 
     sprintf(path, "/automounts/%s", umount_name);
-    umount(path);
+    int r1 = umount(path);
 
     sprintf(path, "/realmounts/%s", umount_name);
-    umount(path);
+    int r2 = umount(path);
+
+    if (r1 != 0 || r2 != 0) {
+        printf("failed to umount\n");
+    }
 }
 
 int main(int argc, char* argv[]) {
