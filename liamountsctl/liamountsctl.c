@@ -149,7 +149,7 @@ static void umount_device(const char* umount_name) {
     int r2 = umount(path);
     rmdir(path);
 
-    if (r1 != 0 || r2 != 0) {
+    if (r1 != 0 && r2 != 0) {
         printf("failed to umount\n");
     }
 }
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
     if (argc == 0) {
         printf("liamountsctl list - displays a list of mounted devices\n");
-        printf("liamountsctl umount name - \n");
+        printf("liamountsctl umount name - unmounts the device with the specified name\n");
         return 0;
     }
 
