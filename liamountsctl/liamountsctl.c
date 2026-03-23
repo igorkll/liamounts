@@ -65,6 +65,16 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
     }
 }
 
+static const char* fs_filename(const char *path) {
+    if (!path || *path == '\0') return NULL;
+
+    const char *last_slash = strrchr(path, '/');
+    if (last_slash) {
+        return last_slash + 1;
+    }
+    return path;
+}
+
 static bool is_valid_name(const char *name) {
     if (!name || *name == '\0') return false;
     
@@ -97,14 +107,17 @@ static void iterate_mounts(void(*callback)(const char* name, const char* file, c
         if (strncmp(entry->mnt_dir, target_dir, strlen(target_dir)) == 0) {
             char* real_mount_directory = strdup(entry->mnt_dir);
             if (real_mount_directory) {
+                const char* name = fs_filename(entry->mnt_dir);
+
                 const char* str = "/realmounts/";
                 memcpy(real_mount_directory, str, strlen(str));
 
                 const char* dev_path = get_fs_dev_file(entry->mnt_fsname);
+                printf("%s %s\n", entry->mnt_dir, name);
                 if (fs_exists(real_mount_directory)) {
-                    callback("", dev_path, entry->mnt_dir, real_mount_directory);
+                    callback(name, dev_path, entry->mnt_dir, real_mount_directory);
                 } else {
-                    callback("", dev_path, entry->mnt_dir, entry->mnt_dir);
+                    callback(name, dev_path, entry->mnt_dir, entry->mnt_dir);
                 }
 
                 free(real_mount_directory);
@@ -124,11 +137,15 @@ static void umount_device(const char* umount_name) {
     char path[PATH_MAX];
     int ret;
 
-    sprintf(path, "/automounts/%s", umount_name);
+    snprintf(path, PATH_MAX, "/automounts/%s", umount_name);
+    path[PATH_MAX - 1] = '\0';
     int r1 = umount(path);
+    rmdir(path);
 
-    sprintf(path, "/realmounts/%s", umount_name);
+    snprintf(path, PATH_MAX, "/realmounts/%s", umount_name);
+    path[PATH_MAX - 1] = '\0';
     int r2 = umount(path);
+    rmdir(path);
 
     if (r1 != 0 || r2 != 0) {
         printf("failed to umount\n");
