@@ -5,6 +5,7 @@
 #include <string.h>
 #include <mntent.h>
 #include <sys/stat.h>
+#include <sys/mount.h>
 #include <unistd.h>
 
 #define PATH_MAX 256
@@ -102,16 +103,21 @@ static void iterate_mounts(void(*callback)(const char* name, const char* file, c
 }
 
 static void umount_device(const char* umount_name) {
-    const char path[PATH_MAX];
-    sprintf(path, "/automounts/%s", umount_name);
+    char path[PATH_MAX];
+    int ret;
 
+    sprintf(path, "/automounts/%s", umount_name);
+    umount(path);
 
     sprintf(path, "/realmounts/%s", umount_name);
-    
+    umount(path);
 }
 
 int main(int argc, char* argv[]) {
-    if (argc <= 1) {
+    argc--;
+    argv++;
+
+    if (argc == 0) {
         printf("liamountsctl list - displays a list of mounted devices\n");
         printf("liamountsctl umount name - \n");
         return 0;
@@ -122,10 +128,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (strcmp(argv[1], "list") == 0) {
+    if (strcmp(argv[0], "list") == 0) {
         iterate_mounts(show_mount);
-    } else if (strcmp(argv[1], "umount") == 0) {
-        umount_device(argv[2]);
+    } else if (strcmp(argv[0], "umount") == 0) {
+        if (argc == 2) {
+            umount_device(argv[1]);
+        }
     } else {
         printf("unknown command\n");
     }
