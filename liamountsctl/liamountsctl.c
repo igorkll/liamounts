@@ -7,8 +7,21 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-bool fs_exists(const char* path) {
+static bool fs_exists(const char* path) {
     return access(path, F_OK) == 0;
+}
+
+static bool fs_isDir(const char* path) {
+    struct stat st;
+    if (stat(path, &st) == 0) {
+        return S_ISDIR(st.st_mode);
+    }
+    return false;
+}
+
+static const char* get_fs_dev_file(const char* mnt_fsname) {
+    if (fs_isDir(mnt_fsname)) return get_fs_dev_file(mnt_fsname);
+    return mnt_fsname;
 }
 
 static void showMount(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory) {
@@ -33,10 +46,11 @@ static void iterateMounts(void(*callback)(const char* name, const char* file, co
                 const char* str = "/realmounts/";
                 memcpy(real_mount_directory, str, strlen(str));
 
+                const char* dev_path = get_fs_dev_file(entry->mnt_fsname);
                 if (fs_exists(real_mount_directory)) {
-                    callback("", entry->mnt_fsname, entry->mnt_dir, real_mount_directory);
+                    callback("", dev_path, entry->mnt_dir, real_mount_directory);
                 } else {
-                    callback("", entry->mnt_fsname, entry->mnt_dir, entry->mnt_dir);
+                    callback("", dev_path, entry->mnt_dir, entry->mnt_dir);
                 }
 
                 free(real_mount_directory);
