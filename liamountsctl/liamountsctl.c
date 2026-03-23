@@ -64,11 +64,11 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
     }
 }
 
-static void showMount(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory) {
+static void show_mount(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory) {
     printf("%s %s %s %s\n", name, file, access_mount_directory, real_mount_directory);
 }
 
-static void iterateMounts(void(*callback)(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory)) {
+static void iterate_mounts(void(*callback)(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory)) {
     FILE *mounts = setmntent("/proc/mounts", "r");
     if (!mounts) {
         perror("setmntent");
@@ -101,6 +101,15 @@ static void iterateMounts(void(*callback)(const char* name, const char* file, co
     endmntent(mounts);
 }
 
+static void umount_device(const char* umount_name) {
+    const char path[PATH_MAX];
+    sprintf(path, "/automounts/%s", umount_name);
+
+
+    sprintf(path, "/realmounts/%s", umount_name);
+    
+}
+
 int main(int argc, char* argv[]) {
     if (argc <= 1) {
         printf("liamountsctl list - displays a list of mounted devices\n");
@@ -114,7 +123,9 @@ int main(int argc, char* argv[]) {
     }
 
     if (strcmp(argv[1], "list") == 0) {
-        iterateMounts(showMount);
+        iterate_mounts(show_mount);
+    } else if (strcmp(argv[1], "umount") == 0) {
+        umount_device(argv[2]);
     } else {
         printf("unknown command\n");
     }
