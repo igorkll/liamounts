@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define PATH_MAX 256
+
 static bool fs_exists(const char* path) {
     return access(path, F_OK) == 0;
 }
@@ -20,8 +22,46 @@ static bool fs_isDir(const char* path) {
 }
 
 static const char* get_fs_dev_file(const char* mnt_fsname) {
-    if (fs_isDir(mnt_fsname)) return get_fs_dev_file(mnt_fsname);
-    return mnt_fsname;
+    static char result[PATH_MAX];
+    char current[PATH_MAX];
+    
+    strncpy(current, mnt_fsname, PATH_MAX - 1);
+    
+    while (1) {
+        // Если это не каталог — выходим
+        if (!fs_isDir(current)) {
+            strncpy(result, current, PATH_MAX - 1);
+            return result;
+        }
+        
+        // Ищем в /proc/mounts
+        FILE* mounts = setmntent("/proc/mounts", "r");
+        if (!mounts) {
+            strncpy(result, current, PATH_MAX - 1);
+            return result;
+        }
+        
+        struct mntent* entry;
+        const char* source = NULL;
+        
+        while ((entry = getmntent(mounts)) != NULL) {
+            if (strcmp(entry->mnt_dir, current) == 0) {
+                source = entry->mnt_fsname;
+                break;
+            }
+        }
+        
+        endmntent(mounts);
+        
+        // Если не нашли монтирование или источник совпадает — выходим
+        if (!source || strcmp(source, current) == 0) {
+            strncpy(result, current, PATH_MAX - 1);
+            return result;
+        }
+        
+        // Идём дальше по цепочке
+        strncpy(current, source, PATH_MAX - 1);
+    }
 }
 
 static void showMount(const char* name, const char* file, const char* access_mount_directory, const char* real_mount_directory) {
