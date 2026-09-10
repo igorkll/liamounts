@@ -6,6 +6,10 @@ if [[ $EUID -ne 0 ]]; then
     exit $?
 fi
 
+mkdir -p -m 755 /usr
+mkdir -p -m 755 /usr/local
+mkdir -p -m 755 /usr/local/bin
+
 # ---------------- install packages
 
 if command -v apt &> /dev/null; then
@@ -87,9 +91,9 @@ chmod 644 /etc/udev/rules.d/99-liamounts.rules
 chown root:root /etc/udev/rules.d/99-liamounts.rules
 
 for script in liamounts_mount_wrapper.sh liamounts_mount.sh liamounts_umount_wrapper.sh liamounts_umount.sh; do
-    cp "$script" "/usr/bin/$script"
-    chmod 755 "/usr/bin/$script"
-    chown root:root "/usr/bin/$script"
+    cp "$script" "/usr/local/bin/$script"
+    chmod 755 "/usr/local/bin/$script"
+    chown root:root "/usr/local/bin/$script"
 done
 
 # ---------------- update disks
@@ -100,7 +104,7 @@ try_mount() {
     
     if udevadm info --query=property "$dev" 2>/dev/null | grep -q "ID_FS_USAGE=filesystem"; then
         echo "try mount device: $dev"
-        /usr/bin/liamounts_mount_wrapper.sh "$dev"
+        /usr/local/bin/liamounts_mount_wrapper.sh "$dev"
     fi
 }
 
