@@ -67,11 +67,34 @@ get_fs_name() {
     # Убираем лишние подчеркивания подряд
     # name=$(echo "$name" | sed 's/__*/_/g')
 
+    # 1. Убираем точки вообще (все)
+    name="${name//./}"
+
+    # 2. Убираем слэши и обратные слэши
+    name="${name//\//_}"
+    name="${name//\\/_}"
+
+    # 3. Убираем все control-символы (\n, \r, \t, \0 и т.д.)
+    name=$(printf '%s' "$name" | tr -d '[:cntrl:]')
+
     # Заменяем пробелы на подчеркивания
     name=$(echo "$name" | sed 's/ /_/g')
     
     # Убираем . в начале (скрытые директории)
-    name=$(echo "$name" | sed 's/^\./_/')
+    # name=$(echo "$name" | sed 's/^\./_/')
+
+    # 7. Если имя пустое — генерируем unknown_<UUID>
+    if [ -z "$name" ]; then
+        local uuid
+        if command -v uuidgen >/dev/null 2>&1; then
+            uuid=$(uuidgen)
+        else
+            uuid=$(cat /proc/sys/kernel/random/uuid)
+        fi
+        # Убираем дефисы из UUID (чтобы имя состояло только из a-z0-9_)
+        uuid="${uuid//-/}"
+        name="unknown_${uuid}"
+    fi
     
     # Ограничиваем длину (макс 255 для ФС, берем 128 для запаса)
     name=$(echo "$name" | cut -c1-128)

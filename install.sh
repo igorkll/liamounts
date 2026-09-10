@@ -11,6 +11,7 @@ fi
 if command -v apt &> /dev/null; then
     apt install -y at
     apt install -y bindfs
+    apt install -y uuid-runtime
 fi
 
 # ---------------- enable user_allow_other
