@@ -77,6 +77,7 @@ static const char* fs_filename(const char *path) {
 
 static bool is_valid_name(const char *name) {
     if (!name || *name == '\0') return false;
+    if (strcmp(name, ".") == 0) return false;
     
     if (strstr(name, "\\") != 0 ||
         strstr(name, "/") != 0 ||
@@ -162,11 +163,6 @@ int main(int argc, char* argv[]) {
         printf("liamountsctl list - displays a list of mounted devices\n");
         printf("liamountsctl umount name - unmounts the device with the specified name\n");
         return 0;
-    }
-
-    if (setuid(0) != 0) {
-        perror("setuid");
-        return 1;
     }
 
     if (strcmp(argv[0], "list") == 0) {
