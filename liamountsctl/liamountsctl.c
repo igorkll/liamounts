@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/mount.h>
 #include <unistd.h>
+#include <grp.h>
 
 #define PATH_MAX 256
 
@@ -161,6 +162,11 @@ static void umount_device(const char* umount_name) {
 }
 
 int main(int argc, char* argv[]) {
+    if (setgroups(0, NULL) != 0 || setgid(0) != 0 || setuid(0) != 0) {
+        perror("dropping privileges");
+        return 1;
+    }
+
     argc--;
     argv++;
 
