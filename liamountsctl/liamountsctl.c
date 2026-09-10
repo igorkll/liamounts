@@ -82,8 +82,9 @@ static const char* fs_filename(const char *path) {
     return path;
 }
 
-static bool is_valid_name(const char *name) {
+static bool is_valid_name(const char* name) {
     if (!name || *name == '\0') return false;
+    if (strlen(name) <= 0) return false;
     if (strcmp(name, ".") == 0) return false;
     
     if (strstr(name, "\\") != 0 ||
@@ -176,15 +177,20 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    bool validArgs = false;
     if (strcmp(argv[0], "list") == 0) {
         iterate_mounts(show_mount);
+        validArgs = true;
     } else if (strcmp(argv[0], "umount") == 0) {
         if (argc == 2) {
             umount_device(argv[1]);
+            validArgs = true;
         }
     } else {
         printf("unknown command\n");
+        validArgs = true;
     }
+    if (!validArgs) printf("invalid args\n");
 
     return 0;
 }
