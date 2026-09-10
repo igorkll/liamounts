@@ -16,6 +16,7 @@ this is necessary because my distribution does not have root access, and this so
 * udev
 * at
 * bindfs
+* uuid-runtime
 
 ## conflicts
 * udisks2
