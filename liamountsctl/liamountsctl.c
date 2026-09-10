@@ -11,7 +11,8 @@
 #define PATH_MAX 256
 
 static bool fs_exists(const char* path) {
-    return access(path, F_OK) == 0;
+    struct stat st;
+    return stat(path, &st) == 0;
 }
 
 static bool fs_isDir(const char* path) {
@@ -27,11 +28,13 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
     char current[PATH_MAX];
     
     strncpy(current, mnt_fsname, PATH_MAX - 1);
+    current[PATH_MAX - 1] = '\0';
     
     while (1) {
         // Если это не каталог — выходим
         if (!fs_isDir(current)) {
             strncpy(result, current, PATH_MAX - 1);
+            result[PATH_MAX - 1] = '\0';
             return result;
         }
         
@@ -39,6 +42,7 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
         FILE* mounts = setmntent("/proc/mounts", "r");
         if (!mounts) {
             strncpy(result, current, PATH_MAX - 1);
+            result[PATH_MAX - 1] = '\0';
             return result;
         }
         
@@ -57,11 +61,13 @@ static const char* get_fs_dev_file(const char* mnt_fsname) {
         // Если не нашли монтирование или источник совпадает — выходим
         if (!source || strcmp(source, current) == 0) {
             strncpy(result, current, PATH_MAX - 1);
+            result[PATH_MAX - 1] = '\0';
             return result;
         }
         
         // Идём дальше по цепочке
         strncpy(current, source, PATH_MAX - 1);
+        current[PATH_MAX - 1] = '\0';
     }
 }
 
@@ -138,7 +144,6 @@ static void umount_device(const char* umount_name) {
     }
 
     char path[PATH_MAX];
-    int ret;
 
     snprintf(path, PATH_MAX, "/automounts/%s", umount_name);
     path[PATH_MAX - 1] = '\0';
